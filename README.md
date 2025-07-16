@@ -4,8 +4,8 @@ BikeAPI is a modular backend system built with NestJS and MongoDB, designed to m
 
 ## Live Deployment
 
--Base API URL: "https://bikeapi-nestjs.onrender.com"
--Swagger Docs: "https://bikeapi-nestjs.onrender.com/api-docs"
+-Base API URL: "https://bike-api-nest.onrender.com"
+-Swagger Docs: "https://bike-api-nest.onrender.com/api-docs"
 
 ## Technologies
 
@@ -45,7 +45,7 @@ BikeAPI is a modular backend system built with NestJS and MongoDB, designed to m
 ## API Documentation
 
 Interactive Swagger UI is available at:  
-[`/api-docs`](https://bikeapi-nestjs.onrender.com/api-docs)
+[`/api-docs`](https://bike-api-nest.onrender.com/api-docs)
 
 To test:
 
