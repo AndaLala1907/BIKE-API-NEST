@@ -13,8 +13,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Enable CORS to allow frontend clients to access the API
-  app.enableCors();
-
+  app.enableCors({
+    origin: ['http://localhost:4200'],
+  });
   // Automatically validate incoming request DTOs
   app.useGlobalPipes(new ValidationPipe());
 

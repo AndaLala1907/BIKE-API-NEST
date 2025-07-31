@@ -25,4 +25,5 @@ export class CalorieCalculator {
     const MET = this.estimateMET(bikeType, roadType, speedType);
     return Math.round(MET * weight * durationHours);
   }
+  
 }
