@@ -48,6 +48,12 @@ export class LogsController extends BaseController<
   override findAll(@Req() req: RequestWithUser) {
     return super.findAll(req);
   }
+  @Get('me')
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.read, Log))
+  getOwnLogs(@Req() req: RequestWithUser) {
+    return this.service.findByUser(req.user._id);
+  }
 
   /**
    * Creates a new log. Adds user_id from the request object.

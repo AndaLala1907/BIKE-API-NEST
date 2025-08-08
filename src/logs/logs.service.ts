@@ -82,4 +82,7 @@ export class LogsService extends BaseService<LogDocument> {
     const calories = minutes * 8; // Example: 8 cal/min
     return Math.round(calories);
   }
+  async findByUser(userId: string): Promise<LogDocument[]> {
+    return this.model.find({ user_id: userId }).sort({ createdAt: -1 });
+  }
 }

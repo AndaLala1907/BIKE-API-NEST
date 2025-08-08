@@ -40,12 +40,13 @@ export class JourneysController extends BaseController<
   /**
    * Returns all journeys (with CASL read permission).
    */
-  @Get()
+  @Get('me')
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.read, Journey))
-  override findAll(@Req() req: RequestWithUser) {
-    return super.findAll(req);
+  getOwnJourneys(@Req() req: RequestWithUser) {
+    return this.service.findByUser(req.user._id);
   }
+
   /**
    * Creates a new journey (requires create permission).
    */
