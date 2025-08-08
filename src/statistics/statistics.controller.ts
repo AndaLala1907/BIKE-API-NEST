@@ -48,6 +48,15 @@ export class StatisticsController extends BaseController<
   override findAll(@Req() req: RequestWithUser) {
     return super.findAll(req);
   }
+  /**
+   * Returns statistics of currently logged-in user.
+   */
+  @Get('me')
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.read, Statistic))
+  getMyStatistics(@Req() req: RequestWithUser) {
+    return this.service.getUserStatistics(req.user._id);
+  }
 
   @Post()
   @ApiExcludeEndpoint()

@@ -52,6 +52,15 @@ export class UsersController extends BaseController<
   override findAll(@Req() req: RequestWithUser) {
     return super.findAll(req);
   }
+  /**
+   * Returns currently logged-in user info.
+   */
+  @Get('me')
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.read, User))
+  getMe(@Req() req: RequestWithUser) {
+    return this.usersService.findById(req.user._id);
+  }
 
   /**
    * Disabled. Use /auth/register instead.
