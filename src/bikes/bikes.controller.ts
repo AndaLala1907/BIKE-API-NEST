@@ -13,8 +13,15 @@ import {
   Body,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiBody,
+  ApiParam,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 
 import { BikesService } from './bikes.service';
 import { CreateBikeDto } from './dto/create-bike.dto';
@@ -26,6 +33,7 @@ import { CheckPolicies } from 'src/common/ability/check-policies.decorator';
 import { AppAbility } from 'src/common/ability/casl-ability.factory';
 import { Action } from 'src/common/ability/actions.enum';
 import { RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiTags('Bikes')
 @ApiBearerAuth('jwt-auth')
@@ -47,6 +55,13 @@ export class BikesController extends BaseController<
   @CheckPolicies((ability: AppAbility) => ability.can(Action.read, Bike))
   override findAll(@Req() req: RequestWithUser) {
     return super.findAll(req);
+  }
+
+  @Get('shared')
+  @Public()
+  @ApiOkResponse({ description: 'Public shared bikes for homepage' })
+  findSharedPublic(@Query('scope') scope?: 'global' | 'local') {
+    return this.bikesService.findSharedPublic(scope);
   }
 
   /**

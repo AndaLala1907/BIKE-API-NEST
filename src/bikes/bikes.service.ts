@@ -25,6 +25,19 @@ export class BikesService extends BaseService<BikeDocument> {
   async findOne(id: string): Promise<BikeDocument | null> {
     return this.bikeModel.findById(id);
   }
+
+  async findSharedPublic(scope?: 'global' | 'local') {
+    const filter: any = { isShared: true };
+    if (scope) filter.visibility = scope;
+
+    return this.bikeModel
+      .find(filter)
+      .select('model brand type image kilometers status colors') // vetëm ç’duhen për UI
+      .lean()
+      .limit(24)
+      .exec();
+  }
+
   /**
    * Soft-deletes a bike by setting deletedAt field.
    * Throws 404 if the bike doesn't exist or is already deleted.

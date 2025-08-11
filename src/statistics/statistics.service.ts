@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Statistic, StatisticDocument } from './schema/statistics.schema';
 import { BaseService } from 'src/common/base/base.service';
 import { haversineDistance } from 'src/common/helpers/haversine';
+import { RequestWithUser } from 'src/common/interfaces/request-with-user.interface'; // FIXED
 
 @Injectable()
 export class StatisticsService extends BaseService<StatisticDocument> {
@@ -11,24 +12,21 @@ export class StatisticsService extends BaseService<StatisticDocument> {
     @InjectModel(Statistic.name)
     private readonly statisticModel: Model<StatisticDocument>,
   ) {
-    // Inject the Mongoose model into the base service
     super(statisticModel);
   }
 
   /**
    * Calculates aggregated statistics for a given user based on completed logs.
-   * These include total distance, duration, burned calories, and average speed.
    */
   async getUserStatistics(userId: string): Promise<any> {
     const logs = await this.statisticModel.db
       .collection('logs')
       .find({
-        user_id: userId, // FIXED: don't convert to ObjectId
+        user_id: userId,
         ended: true,
       })
       .toArray();
 
-    // Return zeroed stats if no logs found
     if (!logs || logs.length === 0) {
       return {
         user_id: userId,
@@ -39,13 +37,12 @@ export class StatisticsService extends BaseService<StatisticDocument> {
         deletedAt: null,
       };
     }
-    // Sum all calories burned across logs
+
     const totalCalories = logs.reduce(
       (sum, log) => sum + (log.caloriesBurned || 0),
       0,
     );
 
-    // Calculate total duration in seconds
     const totalDuration = logs.reduce((sum, log) => {
       const start = log.startedAt ? new Date(log.startedAt).getTime() : null;
       const end = log.timestamp
@@ -58,9 +55,7 @@ export class StatisticsService extends BaseService<StatisticDocument> {
       return sum + dur;
     }, 0);
 
-    // Total distance calculator
     let totalDistance = 0;
-
     for (const log of logs) {
       const coords: number[][] = log.coordinates || [];
 
@@ -71,11 +66,9 @@ export class StatisticsService extends BaseService<StatisticDocument> {
       }
     }
 
-    // Calculate average speed in km/h
     const avgSpeed =
       totalDuration > 0 ? totalDistance / (totalDuration / 3600) : 0;
 
-    // Return statistics
     return {
       user_id: userId,
       distance: totalDistance,
@@ -86,5 +79,16 @@ export class StatisticsService extends BaseService<StatisticDocument> {
       updatedAt: logs[logs.length - 1]?.updatedAt,
       deletedAt: logs[logs.length - 1]?.deletedAt || null,
     };
+  }
+
+  /**
+   * Returns filtered statistics based on user role.
+   */
+  async getAllWithPolicies(req: RequestWithUser): Promise<StatisticDocument[]> {
+    if (req.user.role === 'admin') {
+      return this.statisticModel.find().exec();
+    }
+
+    return this.statisticModel.find({ user_id: req.user._id }).exec();
   }
 }
