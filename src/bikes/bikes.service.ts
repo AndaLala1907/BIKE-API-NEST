@@ -26,17 +26,16 @@ export class BikesService extends BaseService<BikeDocument> {
     return this.bikeModel.findById(id);
   }
 
-  async findSharedPublic(scope: 'global' | 'local' = 'global') {
-    const filter: any = { isShared: true };
-    if (scope === 'local') filter.visibility = 'local';
+  async findSharedPublic() {
 
-    return this.bikeModel
-      .find(filter)
-      .select('model brand type image kilometers status colors')
-      .lean()
-      .limit(24)
-      .exec();
-  }
+  return this.bikeModel
+    .find({ deletedAt: null })
+    .select('model brand type image kilometers status colors createdAt')
+    .sort({ createdAt: -1 })  
+    .lean()
+    .exec();
+}
+
 
   /**
    * Soft-deletes a bike by setting deletedAt field.
