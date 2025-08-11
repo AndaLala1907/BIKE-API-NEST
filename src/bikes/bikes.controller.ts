@@ -21,6 +21,7 @@ import {
   ApiBody,
   ApiParam,
   ApiOkResponse,
+  ApiQuery,
 } from '@nestjs/swagger';
 
 import { BikesService } from './bikes.service';
@@ -60,7 +61,13 @@ export class BikesController extends BaseController<
   @Get('shared')
   @Public()
   @ApiOkResponse({ description: 'Public shared bikes for homepage' })
-  findSharedPublic(@Query('scope') scope?: 'global' | 'local') {
+  @ApiQuery({
+    name: 'scope',
+    required: false,
+    enum: ['global', 'local'],
+    schema: { default: 'global' },
+  })
+  findSharedPublic(@Query('scope') scope: 'global' | 'local' = 'global') {
     return this.bikesService.findSharedPublic(scope);
   }
 

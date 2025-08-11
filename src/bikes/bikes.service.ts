@@ -26,13 +26,13 @@ export class BikesService extends BaseService<BikeDocument> {
     return this.bikeModel.findById(id);
   }
 
-  async findSharedPublic(scope?: 'global' | 'local') {
+  async findSharedPublic(scope: 'global' | 'local' = 'global') {
     const filter: any = { isShared: true };
-    if (scope) filter.visibility = scope;
+    if (scope === 'local') filter.visibility = 'local';
 
     return this.bikeModel
       .find(filter)
-      .select('model brand type image kilometers status colors') // vetëm ç’duhen për UI
+      .select('model brand type image kilometers status colors')
       .lean()
       .limit(24)
       .exec();
