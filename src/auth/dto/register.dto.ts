@@ -2,36 +2,37 @@
  * DTO used to validate and document user registration data.
  * Ensures valid types and enforces minimum length/format constraints.
  */
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsEmail,
   MinLength,
   IsNumber,
-  IsNotEmpty,
+  IsOptional,
 } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 
 export class RegisterDto {
-  @ApiProperty() // Shown in Swagger UI
+  @ApiProperty({ minLength: 2 })
   @IsString()
   @MinLength(2)
-  name: string; // Full name (min 2 characters)
+  name: string;
 
   @ApiProperty()
   @IsEmail()
-  email: string; // Valid email address
+  email: string;
 
-  @ApiProperty()
+  @ApiProperty({ minLength: 8 })
   @IsString()
   @MinLength(8)
-  password: string; // Password with at least 8 characters
+  password: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional({ type: Number, example: 75, description: 'Optional' })
+  @IsOptional()
+  @Transform(({ value }) =>
+    value === '' || value === null ? undefined : value,
+  )
+  @Type(() => Number)
   @IsNumber()
-  weight: number; // User's weight (number)
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  role: string; // User role (e.g., 'user', 'admin')
+  weight?: number;
 }
