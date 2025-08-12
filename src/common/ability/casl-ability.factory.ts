@@ -1,3 +1,4 @@
+// src/common/ability/casl-ability.factory.ts
 /**
  * Factory class that defines authorization rules using CASL.
  * It determines what actions a given user can perform on which resources.
@@ -10,6 +11,7 @@ import {
 } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { Action } from './actions.enum';
+
 import { User } from 'src/users/schemas/user.schema';
 import { Bike } from 'src/bikes/schemas/bike.schema';
 import { Journey } from 'src/journeys/schemas/journey.schema';
@@ -19,10 +21,7 @@ import { Log } from 'src/logs/schemas/log.schema';
 import { RoadType } from 'src/roadtypes/schemas/roadtype.schema';
 import { SpeedType } from 'src/speedtypes/schemas/speedtype.schema';
 
-// Define supported actions
-type Actions = 'manage' | 'create' | 'read' | 'update' | 'delete';
-
-// Define subjects the user can act upon
+// Subjects the user can act upon
 type Subjects =
   | InferSubjects<
       | typeof User
@@ -36,59 +35,73 @@ type Subjects =
     >
   | 'User'
   | 'home'
-  | 'all'; // Allow global permissions like 'manage all'
+  | 'all';
 
-export type AppAbility = PureAbility<[Actions, Subjects]>;
+// Use the Action enum for ability actions
+export type AppAbility = PureAbility<[Action, Subjects]>;
 
 @Injectable()
 export class CaslAbilityFactory {
   /**
    * Build the CASL ability object based on the user's role.
    */
-  createForUser(user: any): AppAbility {
-    const builder = new AbilityBuilder<PureAbility<[Actions, Subjects]>>(
+  createForUser(user: User | null | undefined): AppAbility {
+    const builder = new AbilityBuilder<AppAbility>(
       PureAbility as AbilityClass<AppAbility>,
     );
-    const { can, cannot } = builder;
+    const { can } = builder;
 
-    // Default: anonymous users can only read home
+    // Anonymous users: allow only reading "home" pseudo-subject
     if (!user || !user.role) {
+      can(Action.read, 'home');
       return builder.build({
+        // Keep detectSubjectType to support class-based subjects
         detectSubjectType: (item) => {
           if (typeof item === 'function') return item;
-          return (
-            (item as any)?.__caslSubjectType__ ||
+          // fallbacks for plain objects
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return ((item as any)?.__caslSubjectType__ ||
             item?.constructor?.name ||
-            item.constructor
-          );
-        },
-        conditionsMatcher: (conditions: any) => {
-          return (object: any) => true;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (item as any).constructor) as any;
         },
       });
     }
 
     if (user.role === 'admin') {
       // Admins can do anything
-      can('manage', 'all');
-      can('read', 'home');
-      can(Action.update, Statistic);
+      can(Action.manage, 'all');
+      can(Action.read, 'home');
     } else {
-      // Regular users can only read the home route
-      can('read', 'home');
+      // Regular users
+      can(Action.read, 'home');
+
+      // Public-like reads (lists used by dashboard)
+      can(Action.read, RoadType);
+      can(Action.read, SpeedType);
+
+      // Read own data
+      can(Action.read, User, { _id: (user as any)._id });
+      can(
+        Action.read,
+        Statistic /* optionally: { userId: (user as any)._id } */,
+      );
+      can(Action.read, Log /* optionally: { userId: (user as any)._id } */);
+      can(Action.read, Journey /* optionally: { userId: (user as any)._id } */);
+
+      // Optional: create own entries
+      // can(Action.create, Journey);
+      // can(Action.create, Log);
     }
 
     return builder.build({
       detectSubjectType: (item) => {
         if (typeof item === 'function') return item;
-        return (
-          (item as any)?.__caslSubjectType__ ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return ((item as any)?.__caslSubjectType__ ||
           item?.constructor?.name ||
-          item.constructor
-        );
-      },
-      conditionsMatcher: (conditions: any) => {
-        return (object: any) => true;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (item as any).constructor) as any;
       },
     });
   }
