@@ -2,12 +2,10 @@
  * Main entry point of the application.
  * Sets up global middleware, Swagger docs, and global guards.
  */
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { PoliciesGuard } from './common/ability/policies.guard';
-import { CaslAbilityFactory } from './common/ability/casl-ability.factory';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -46,9 +44,6 @@ async function bootstrap() {
   /**
    * Attaches the PoliciesGuard globally to enforce access control.
    */
-  const reflector = app.get(Reflector);
-  const caslAbilityFactory = app.get(CaslAbilityFactory);
-  app.useGlobalGuards(new PoliciesGuard(reflector, caslAbilityFactory));
 
   await app.listen(process.env.PORT || 3000); // Start server
 }

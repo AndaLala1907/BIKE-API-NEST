@@ -23,9 +23,9 @@ import { RoadtypesModule } from './roadtypes/roadtypes.module';
 import { SpeedtypesModule } from './speedtypes/speedtypes.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { HomeModule } from './home/home.module';
-
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PoliciesGuard } from './common/ability/policies.guard';
 
 @Module({
   imports: [
@@ -49,6 +49,8 @@ import { AppService } from './app.service';
   providers: [
     AppService,
     CaslAbilityFactory,
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: PoliciesGuard },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard, //Apply JwtAuthGuard globally
