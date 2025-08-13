@@ -20,8 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken() as () => string,
       ignoreExpiration: false,
-      // Fallback nëse JWT_SECRET mungon, që të përputhet me JwtModule.register(...)
-      secretOrKey: process.env.JWT_SECRET ?? 'dev-secret',
+      secretOrKey: process.env.JWT_SECRET || 'SECRET_KEY',
     });
   }
 
@@ -29,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!payload?.sub) {
       throw new UnauthorizedException('Invalid token payload');
     }
-    // Kthe strukturë minimale që CASL/PoliciesGuard presin
+
     return {
       _id: payload.sub,
       role: payload.role,
