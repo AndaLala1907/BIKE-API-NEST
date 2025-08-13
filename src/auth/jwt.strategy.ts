@@ -6,33 +6,30 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-// Defines the shape of JWT payload
 export interface JwtPayload {
   sub: string; // User ID
-  role: string; // User role
-  email?: string; // Optional: user email
-  iat?: number; // Issued at
-  exp?: number; // Expiration
+  role: 'user' | 'admin';
+  email?: string;
+  iat?: number;
+  exp?: number;
 }
+
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor() {
     super({
-      // Extract JWT from Authorization: Bearer <token> header
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken() as () => string,
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET as string, // Loaded from .env
+      // Fallback nëse JWT_SECRET mungon, që të përputhet me JwtModule.register(...)
+      secretOrKey: process.env.JWT_SECRET ?? 'dev-secret',
     });
   }
-  /**
-   * Validates the JWT payload.
-   * Ensures that a user ID (sub) exists.
-   */
+
   validate(payload: JwtPayload): any {
-    if (!payload.sub) {
+    if (!payload?.sub) {
       throw new UnauthorizedException('Invalid token payload');
     }
-
+    // Kthe strukturë minimale që CASL/PoliciesGuard presin
     return {
       _id: payload.sub,
       role: payload.role,

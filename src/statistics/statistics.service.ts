@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { Statistic, StatisticDocument } from './schema/statistics.schema';
 import { BaseService } from 'src/common/base/base.service';
 import { haversineDistance } from 'src/common/helpers/haversine';
-import { RequestWithUser } from 'src/common/interfaces/request-with-user.interface'; // FIXED
+import { RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
 
 @Injectable()
 export class StatisticsService extends BaseService<StatisticDocument> {
@@ -58,7 +58,6 @@ export class StatisticsService extends BaseService<StatisticDocument> {
     let totalDistance = 0;
     for (const log of logs) {
       const coords: number[][] = log.coordinates || [];
-
       for (let i = 1; i < coords.length; i++) {
         const [lat1, lon1] = coords[i - 1];
         const [lat2, lon2] = coords[i];
@@ -82,13 +81,16 @@ export class StatisticsService extends BaseService<StatisticDocument> {
   }
 
   /**
-   * Returns filtered statistics based on user role.
+   * Policy-aware list:
+   *  - admin -> të gjitha
+   *  - user normal -> vetëm të vetat (sipas user_id)
+   *
+   * KJO metodë përdoret nga BaseController.findAll(req) nëse ekziston.
    */
   async getAllWithPolicies(req: RequestWithUser): Promise<StatisticDocument[]> {
-    if (req.user.role === 'admin') {
+    if (req.user?.role === 'admin') {
       return this.statisticModel.find().exec();
     }
-
     return this.statisticModel.find({ user_id: req.user._id }).exec();
   }
 }

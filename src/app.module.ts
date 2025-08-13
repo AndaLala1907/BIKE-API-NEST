@@ -26,6 +26,7 @@ import { HomeModule } from './home/home.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PoliciesGuard } from './common/ability/policies.guard';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { PoliciesGuard } from './common/ability/policies.guard';
     SpeedtypesModule,
     StatisticsModule,
     HomeModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

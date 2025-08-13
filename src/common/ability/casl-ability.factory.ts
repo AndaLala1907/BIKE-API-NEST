@@ -12,7 +12,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { Action } from './actions.enum';
 
-import { User } from 'src/users/schemas/user.schema';
+import { User, UserDocument } from 'src/users/schemas/user.schema';
 import { Bike } from 'src/bikes/schemas/bike.schema';
 import { Journey } from 'src/journeys/schemas/journey.schema';
 import { Device } from 'src/devices/schemas/device.schema';
@@ -45,7 +45,7 @@ export class CaslAbilityFactory {
   /**
    * Build the CASL ability object based on the user's role.
    */
-  createForUser(user: User | null | undefined): AppAbility {
+  createForUser(user: UserDocument | null | undefined): AppAbility {
     const builder = new AbilityBuilder<AppAbility>(
       PureAbility as AbilityClass<AppAbility>,
     );
@@ -55,10 +55,9 @@ export class CaslAbilityFactory {
     if (!user || !user.role) {
       can(Action.read, 'home');
       return builder.build({
-        // Keep detectSubjectType to support class-based subjects
         detectSubjectType: (item) => {
           if (typeof item === 'function') return item;
-          // fallbacks for plain objects
+          // fallback for plain objects
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return ((item as any)?.__caslSubjectType__ ||
             item?.constructor?.name ||
@@ -76,20 +75,19 @@ export class CaslAbilityFactory {
       // Regular users
       can(Action.read, 'home');
 
-      // Public-like reads (lists used by dashboard)
+      // Public lists used by dashboard
       can(Action.read, RoadType);
       can(Action.read, SpeedType);
 
-      // Read own data
-      can(Action.read, User, { _id: (user as any)._id });
-      can(
-        Action.read,
-        Statistic /* optionally: { userId: (user as any)._id } */,
-      );
-      can(Action.read, Log /* optionally: { userId: (user as any)._id } */);
-      can(Action.read, Journey /* optionally: { userId: (user as any)._id } */);
+      // Read own data (note: user._id vjen nga dokumenti i Mongoose)
+      const uid = (user as any)._id;
 
-      // Optional: create own entries
+      can(Action.read, User, { _id: uid });
+      can(Action.read, Statistic /* , { user_id: uid } */);
+      can(Action.read, Log /* , { user_id: uid } */);
+      can(Action.read, Journey /* , { user_id: uid } */);
+
+      // Shembuj nëse do të lejosh krijim për user-in:
       // can(Action.create, Journey);
       // can(Action.create, Log);
     }

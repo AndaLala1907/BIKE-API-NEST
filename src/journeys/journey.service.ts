@@ -18,9 +18,6 @@ export class JourneysService extends BaseService<JourneyDocument> {
     super(journeyModel);
   }
   async findByUser(userId: string): Promise<JourneyDocument[]> {
-    return this.model
-      .find({ user_id: userId })
-      .sort({ createdAt: -1 })
-      .limit(1);
+    return this.model.find({ user_id: userId }).sort({ createdAt: -1 });
   }
 }
