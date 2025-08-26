@@ -48,15 +48,6 @@ import { DashboardModule } from './dashboard/dashboard.module';
     DashboardModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    CaslAbilityFactory,
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_GUARD, useClass: PoliciesGuard },
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard, //Apply JwtAuthGuard globally
-    },
-  ],
+  providers: [AppService, CaslAbilityFactory],
 })
 export class AppModule {}

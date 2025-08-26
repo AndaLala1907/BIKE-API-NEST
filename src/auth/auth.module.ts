@@ -1,24 +1,27 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
-import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
-import { PassportModule } from '@nestjs/passport';
-/**
- * Handles authentication-related logic and setup.
- * Imports User module, configures JWT strategy and Passport integration.
- */
+
 @Module({
   imports: [
-    UsersModule, // Needed for validating users during login
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'SECRET_KEY', // Secret for signin JWTs
-      signOptions: { expiresIn: '1y' }, // Token validity period
+    UsersModule,
+    PassportModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1y' },
+      }),
     }),
-    PassportModule, // Enables passport strategy  integration
   ],
-  controllers: [AuthController], // Exposes /auth routes
-  providers: [AuthService, JwtStrategy], // Business logic and JWT validation
+  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy],
 })
 export class AuthModule {}

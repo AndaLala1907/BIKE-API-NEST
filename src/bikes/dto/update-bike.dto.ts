@@ -3,28 +3,37 @@ import { CreateBikeDto } from './create-bike.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
- * Same fields as CreateBikeDto, but all optional for PATCH requests.
- * Enables partial updates of bike entities.
+ * DTO for updating an existing bike.
+ * Extends CreateBikeDto but all fields are optional.
  */
 export class UpdateBikeDto extends PartialType(CreateBikeDto) {
   @ApiPropertyOptional()
-  name?: string;
+  model?: string;
+
+  @ApiPropertyOptional()
+  brand?: string;
 
   @ApiPropertyOptional()
   type?: string;
 
   @ApiPropertyOptional()
-  weight?: number;
+  image?: string;
 
   @ApiPropertyOptional()
-  user_id?: string;
+  kilometers?: number;
 
   @ApiPropertyOptional()
-  speedType?: string;
+  status?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  colors?: string[];
 
   @ApiPropertyOptional()
-  roadType?: string;
+  name?: string;
 
   @ApiPropertyOptional()
   barcode?: string;
+
+  @ApiPropertyOptional()
+  owner?: string; // MongoId
 }

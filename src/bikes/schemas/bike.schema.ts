@@ -1,37 +1,47 @@
-/**
- * Defines the MongoDB schema for the Bike model using Mongoose.
- * Includes fields for identification, ownership, types, and soft deletion.
- * Automatically tracks createdAt and updatedAt timestamps.
- */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { User } from 'src/users/schemas/user.schema';
 
-@Schema({ timestamps: true }) // Adds createdAt and updatedAt fields automtically
+@Schema({ timestamps: true })
 export class Bike {
   @Prop({ required: true })
-  name: string; // Name of the bike
+  model: string;
 
   @Prop({ required: true })
-  type: string; // Type/category of bike
+  brand: string;
 
   @Prop()
-  weight: number; // Optional bike weight
+  type: string;
+
+  @Prop()
+  image: string;
+
+  @Prop()
+  kilometers: number;
+
+  @Prop()
+  status: string;
+
+  @Prop([String])
+  colors: string[];
 
   @Prop({ required: true })
-  user_id: string; // Reference to the owning user (user_id)
+  name: string;
 
-  @Prop()
-  speedType: string; // Associated speed type( optional string reference)
+  @Prop({ unique: true })
+  barcode: string;
 
-  @Prop()
-  roadType: string; // Associated road type ( optional string reference)
+  /** Public bikes are visible to everyone */
+  @Prop({ type: Boolean, default: false })
+  isPublic: boolean;
 
-  @Prop({ required: true, unique: true })
-  barcode: string; // Unique barcdoe for device pairing
-  @Prop()
-  deletedAt?: Date; // Used for soft deletes (null if active)
+  /** Owner of the bike (reference to User) */
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  owner: Types.ObjectId | User;
+
+  @Prop({ type: Date, default: null })
+  deletedAt: Date;
 }
-// Document type that includes Mongoose metadata
-export type BikeDocument = Bike & Document;
-// Mongoose schema creation from class definition
+
+export type BikeDocument = Bike & Document<Types.ObjectId>;
 export const BikeSchema = SchemaFactory.createForClass(Bike);

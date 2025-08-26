@@ -67,16 +67,11 @@ export class AuthService {
     const userDoc = user as UserDocument;
 
     return {
-      access_token: this.jwtService.sign(
-        {
-          sub: userDoc._id.toString(),
-          email: userDoc.email,
-          role: userDoc.role,
-        },
-        {
-          expiresIn: '1y',
-        },
-      ),
+      access_token: this.jwtService.sign({
+        sub: userDoc._id.toString(),
+        email: userDoc.email,
+        role: userDoc.role,
+      }),
     };
   }
 }

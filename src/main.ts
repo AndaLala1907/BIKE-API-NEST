@@ -14,7 +14,7 @@ async function bootstrap() {
   app.enableCors({
     origin: ['http://localhost:4200'],
   });
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api/v1');
   // Automatically validate incoming request DTOs
   app.useGlobalPipes(new ValidationPipe());
 

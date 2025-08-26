@@ -1,7 +1,8 @@
 /**
- * Custom guard that extends NestJS's built-in AuthGuard with 'jwt' strategy.
- * Intercepts requests to validate JWT tokens using Passport and handles errors.
- * Also respects @Public() decorator to bypass auth for public routes.
+ * Custom JWT Auth Guard
+ * - Allows guest requests (returns null user if no token)
+ * - Validates JWT tokens if present
+ * - Respects @Public() decorator for explicitly public routes
  */
 import {
   ExecutionContext,
@@ -17,10 +18,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(private reflector: Reflector) {
     super();
   }
-  /**
-   * Checks if the current route is marked as public using @Public().
-   * If so, bypasses the JWT authentication.
-   */
 
   canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -33,15 +30,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  /**
-   * Override default behavior to log and handle errors explicitly.
-   */
-  handleRequest<TUser = unknown>(
-    err: unknown,
+  handleRequest<TUser = any>(
+    err: any,
     user: TUser | null,
-    info: unknown,
+    info: any,
     context: ExecutionContext,
-  ): TUser {
+  ): TUser | null {
     console.log('JwtAuthGuard enabled:', {
       err,
       user,
@@ -50,17 +44,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     });
 
     if (err) {
-      if (err instanceof Error) {
-        throw err;
-      } else {
-        throw new UnauthorizedException('Unknown error occurred.');
-      }
+      throw err;
     }
 
-    if (!user) {
-      throw new UnauthorizedException(); // Token missing or invalid
-    }
-
-    return user;
+    // Guest allowed → return null if no user
+    return user || null;
   }
 }

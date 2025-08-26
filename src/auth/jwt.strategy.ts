@@ -1,13 +1,10 @@
-/**
- * Passport strategy used to validate JWTs on protected routes.
- * Extracts token from Authorization header and validates the payload.
- */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ConfigService } from '@nestjs/config';
 
 export interface JwtPayload {
-  sub: string; // User ID
+  sub: string;
   role: 'user' | 'admin';
   email?: string;
   iat?: number;
@@ -16,11 +13,11 @@ export interface JwtPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor() {
+  constructor(configService: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken() as () => string,
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'SECRET_KEY',
+      secretOrKey: configService.get<string>('JWT_SECRET'),
     });
   }
 
@@ -28,11 +25,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!payload?.sub) {
       throw new UnauthorizedException('Invalid token payload');
     }
-
-    return {
-      _id: payload.sub,
-      role: payload.role,
-      email: payload.email,
-    };
+    return { _id: payload.sub, role: payload.role, email: payload.email };
   }
 }
